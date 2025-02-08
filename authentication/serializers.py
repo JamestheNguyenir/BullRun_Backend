@@ -15,7 +15,6 @@ class UserSerializer(ModelSerializer):
         model = User
         fields = [ 'email', 'is_active', 'is_staff']
 
-
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         max_length=68, min_length=6, write_only=True)
@@ -87,8 +86,6 @@ class LoginSerializer(serializers.ModelSerializer):
         return super().validate(attrs)
 
 
-
-
 class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
 
@@ -107,3 +104,4 @@ class LogoutSerializer(serializers.Serializer):
 
         except TokenError:
             self.fail('bad_token')
+

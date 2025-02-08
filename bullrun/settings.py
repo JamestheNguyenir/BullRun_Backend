@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
 from pathlib import Path
-import datetime
+import datetime, os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'corsheaders',
     'authentication',
+    'investments',
+    'stockmatching'
 ]
 AUTH_USER_MODEL = "authentication.User"
 
@@ -68,6 +70,9 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=30),
 }
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 TEMPLATES = [
     {
@@ -153,7 +158,7 @@ SWAGGER_SETTINGS = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:4200",
+    "http://localhost:3000",
 ]
 
 CORS_ALLOW_METHODS = [
