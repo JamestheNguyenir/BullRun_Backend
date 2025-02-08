@@ -16,7 +16,7 @@ from .serializers import InvestmentSerializer
 
 
 class InvestmentView(viewsets.ModelViewSet):
-    permissions_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     queryset = Investment.objects.all()
     serializer_class = InvestmentSerializer
     http_methods = ['get','post','patch','delete']

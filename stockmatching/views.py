@@ -11,13 +11,13 @@ from .serializers import UserProfileSerializer
 # Create your views here.
 
 class UserProfileView(viewsets.ModelViewSet):
-    permission_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     http_methods = ['get','post','patch','delete']
 
 class StockMatchView(viewsets.ModelViewSet):
-    permission_class = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     queryset = StockMatch.objects.all()
     #serializer_class = StockMatchSerializer
     

@@ -21,10 +21,10 @@ class CustomRedirect(HttpResponsePermanentRedirect):
 
 #Api to see get the users, and update them 
 class UserViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     http_method_names = ['get', 'put']
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated]
 
 #Api to register users
 class RegisterView(generics.GenericAPIView):
@@ -55,9 +55,8 @@ class LoginAPIView(generics.GenericAPIView):
 
 #Api to logout users
 class LogoutAPIView(generics.GenericAPIView):
-    serializer_class = LogoutSerializer
-
     permission_classes = [IsAuthenticated]
+    serializer_class = LogoutSerializer
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data)

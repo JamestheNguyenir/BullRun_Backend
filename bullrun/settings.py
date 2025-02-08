@@ -44,8 +44,11 @@ INSTALLED_APPS = [
     'corsheaders',
     'authentication',
     'investments',
-    'stockmatching'
+    'stockmatching',
 ]
+
+SITE_ID = 1
+
 AUTH_USER_MODEL = "authentication.User"
 
 REST_FRAMEWORK = {
@@ -62,6 +65,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'bullrun.urls'
