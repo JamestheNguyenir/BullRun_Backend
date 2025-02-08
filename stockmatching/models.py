@@ -25,9 +25,13 @@ class Stock(models.Model):
     risk_level = models.CharField(max_length=10, choices=Levels.choices, default=Levels.Low)
     liquidity = models.CharField(max_length=10, choices=Levels.choices, default=Levels.Medium)
     description = models.TextField()
-    price = models.DecimalField(max_digits=12, decimal_places=2)
-
+    
 class StockMatch(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
     liked = models.BooleanField(default=False)
+
+class StockPrice(models.Model):
+    stock = models.ForeignKey(Stock, on_delete=models.CASCADE, related_name="historical_prices")
+    date = models.DateField()
+    price = models.DecimalField(max_digits=12, decimal_places=2)

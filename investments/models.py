@@ -7,4 +7,5 @@ class Investment(models.Model):
     stock = models.ForeignKey(Stock,on_delete=models.CASCADE)
     amount_invested = models.DecimalField(max_digits=12, decimal_places=2)
     time_bought = models.DateTimeField(auto_now_add=True)
-    price_at_purchase = models.IntegerField()
+    price_at_purchase = models.DecimalField(max_digits=12, decimal_places=2)  # Price per share at purchase
+
