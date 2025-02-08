@@ -13,7 +13,7 @@ from authentication.models import User
 class UserSerializer(ModelSerializer):
     class Meta:
         model = User
-        fields = [ 'email', 'is_active', 'is_staff']
+        fields = ['name','email', 'is_active', 'is_staff']
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(

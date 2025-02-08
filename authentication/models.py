@@ -30,6 +30,7 @@ AUTH_PROVIDERS = {'email': 'email'}
 
 # Custom User Model
 class User(AbstractBaseUser, PermissionsMixin):
+    name = models.CharField(max_length=255)
     email = models.EmailField(max_length=255, unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
