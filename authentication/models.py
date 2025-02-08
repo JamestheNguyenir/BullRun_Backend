@@ -9,17 +9,17 @@ from rest_framework_simplejwt.tokens import RefreshToken
 # Custom User Manager
 class UserManager(BaseUserManager):
 
-    def create_user(self, email, password=None):
+    def create_user(self, name, email, password=None):
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
-        user = self.model(email=email)
+        user = self.model(email=email,name = name)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None):
-        user = self.create_user(email, password)
+    def create_superuser(self, name, email, password=None):
+        user = self.create_user(name,email, password)
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
