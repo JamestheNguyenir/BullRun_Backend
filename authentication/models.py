@@ -66,6 +66,5 @@ class User(AbstractBaseUser, PermissionsMixin):
             'refresh': str(refresh),
             'access': str(refresh.access_token)
         }
-
-class Profile(models.Model):   
     
+#brennan gay

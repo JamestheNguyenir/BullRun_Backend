@@ -23,6 +23,7 @@ inflection==0.5.1
 jaraco.classes==3.4.0
 jaraco.context==6.0.1
 jaraco.functools==4.1.0
+keras==3.7.0
 keyring==25.6.0
 libclang==18.1.1
 macholib==1.16.3
@@ -59,6 +60,8 @@ six==1.17.0
 sqlparse==0.5.3
 tensorboard==2.18.0
 tensorboard-data-server==0.7.2
+tensorflow-intel==0.0.1
+tensorflow-io-gcs-filesystem==0.37.1
 termcolor==2.5.0
 twine==6.0.1
 typing_extensions==4.12.2
