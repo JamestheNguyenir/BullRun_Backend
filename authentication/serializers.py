@@ -22,7 +22,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'password', 'tokens', 'id']
+        fields = ['name','email', 'password', 'tokens', 'id']
 
     def get_tokens(self, obj):
         user = User.objects.get(email=obj['email'])
@@ -35,6 +35,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         created_user = User.objects.create_user(**validated_data)
         return {
+            'name':validated_data.name,
             'email': created_user.email,
             'tokens': created_user.tokens,
             'id': created_user.id
