@@ -9,7 +9,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 
 from authentication.models import User
-from .models import Investment,
+from .models import Investment
 from stockmatching.models import UserProfile
 from .serializers import InvestmentSerializer
 
