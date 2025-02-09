@@ -117,8 +117,24 @@ class InvestmentView(viewsets.ModelViewSet):
         user_profile = get_object_or_404(UserProfile, user_id=user_id)
         investments = Investment.objects.filter(profile=user_profile)
 
-        if not investments.exists():
-            return Response({"error": "User does not have any investments"}, status=status.HTTP_404_NOT_FOUND)
+        # Fetch user's liquidity (cash)
+        liquidity = user_profile.liquidity if hasattr(user_profile, 'liquidity') else 0
+
+        # If no investments, still show liquidity (cash) as part of portfolio
+        if not investments.exists() and liquidity == 0:
+            return Response({
+                'total_invested': liquidity,
+                'total_current_value': liquidity,
+                'total_gains': 0.0,
+                'investment_breakdown': [{
+                    'stock_symbol': 'CASH',
+                    'stock_name': 'Cash',
+                    'total_invested': liquidity,
+                    'total_current_value': liquidity,
+                    'shares_owned': 0,
+                    'proportion': 100.0  # 100% of the portfolio is in cash
+                }]
+            }, status=status.HTTP_200_OK)
 
         # Dictionary to store aggregated data for each stock
         stock_breakdown = {}
@@ -158,8 +174,8 @@ class InvestmentView(viewsets.ModelViewSet):
             stock_breakdown[ticker]['shares_owned'] += shares_owned
 
         # Calculate total portfolio value
-        total_invested = sum(item['total_invested'] for item in stock_breakdown.values())
-        total_current_value = sum(item['total_current_value'] for item in stock_breakdown.values())
+        total_invested = sum(item['total_invested'] for item in stock_breakdown.values()) + liquidity
+        total_current_value = sum(item['total_current_value'] for item in stock_breakdown.values()) + liquidity
 
         # Prepare the breakdown for response
         breakdown = []
@@ -172,6 +188,17 @@ class InvestmentView(viewsets.ModelViewSet):
                 'total_current_value': float(stock_data['total_current_value']),
                 'shares_owned': float(stock_data['shares_owned']),
                 'proportion': round(proportion, 2)  # Percentage of total portfolio
+            })
+
+        # Add cash as part of the portfolio breakdown
+        if liquidity > 0:
+            breakdown.append({
+                'stock_symbol': 'CASH',
+                'stock_name': 'Cash',
+                'total_invested': float(liquidity),
+                'total_current_value': float(liquidity),
+                'shares_owned': 0,
+                'proportion': round((liquidity / total_current_value) * 100, 2) if total_current_value > 0 else 100.0
             })
 
         # Calculate total gains (current value - initial investment)
