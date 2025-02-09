@@ -21,7 +21,6 @@ import yfinance as yf
 from decimal import Decimal  # Import Decimal for conversion
 
 class InvestmentView(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
     queryset = Investment.objects.all()
     serializer_class = InvestmentSerializer
     http_methods = ['get','post','patch','delete']
@@ -138,3 +137,56 @@ class InvestmentView(viewsets.ModelViewSet):
             })
 
         return Response({'total_investment': total_investment, 'investment_breakdown': breakdown}, status=status.HTTP_200_OK)
+    @action(detail=False, methods=['get'])
+    def get_leaderboard(self, request):
+
+        # Retrieve all user profiles.
+        all_profiles = UserProfile.objects.all()
+
+        # Dictionary to cache current prices for tickers (to reduce repeated yfinance calls)
+        current_prices = {}
+
+        leaderboard = []
+        for profile in all_profiles:
+            investments = Investment.objects.filter(profile=profile)
+            if not investments.exists():
+                continue  # Skip profiles with no investments
+
+            total_invested = Decimal(0)
+            total_current_value = Decimal(0)
+            for investment in investments:
+                ticker = investment.stock.symbol
+
+                # Cache current price per ticker.
+                if ticker not in current_prices:
+                    stock_data = yf.Ticker(ticker)
+                    hist = stock_data.history(period="1d")
+                    if not hist.empty:
+                        price = Decimal(str(hist['Close'].iloc[-1]))
+                    else:
+                        price = Decimal('0')
+                    current_prices[ticker] = price
+
+                shares_owned = investment.amount_invested / investment.price_at_purchase
+                current_price = current_prices[ticker]
+
+                total_invested += investment.amount_invested
+                total_current_value += shares_owned * current_price
+
+            if total_invested > 0:
+                percentage_gain = ((total_current_value - total_invested) / total_invested) * 100
+            else:
+                percentage_gain = Decimal(0)
+
+            leaderboard.append({
+                'user_id': profile.user.id,
+                'name': profile.user.name,
+                'percentage_gain': float(round(percentage_gain, 2)),
+                'total_invested': float(total_invested),
+                'total_current_value': float(total_current_value)
+            })
+
+        # Sort the leaderboard by percentage gain in descending order.
+        leaderboard.sort(key=lambda x: x['percentage_gain'], reverse=True)
+
+        return Response({"leaderboard": leaderboard}, status=status.HTTP_200_OK)
