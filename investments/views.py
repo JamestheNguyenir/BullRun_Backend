@@ -59,10 +59,10 @@ class InvestmentView(viewsets.ModelViewSet):
             result.append(InvestmentJson)
         
         return Response(result, status=status.HTTP_200_OK)
-    
     @action(detail=False, methods=['get'])
-    def get_portfolio_breakdown(self, request):
+    def get_portfolio_value(self, request):
         user_id = request.query_params.get('user_id')
+        start_date_str = request.query_params.get('start_date')  # Optional: "YYYY-MM-DD"
 
         if not user_id:
             return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -70,59 +70,43 @@ class InvestmentView(viewsets.ModelViewSet):
         user_profile = get_object_or_404(UserProfile, user_id=user_id)
         investments = Investment.objects.filter(profile=user_profile)
 
-        if not investments.exists():
-            return Response({"error": "User does not have any investments"}, status=status.HTTP_404_NOT_FOUND)
+        # Determine date range
+        today = now().date()
+        default_start_date = today - timedelta(days=30)  
+        start_date = default_start_date if not start_date_str else min(
+            today, max(default_start_date, datetime.strptime(start_date_str, "%Y-%m-%d").date())
+        )
 
-        # Initialize totals
-        total_invested = Decimal(0)  # Total amount invested
-        total_current_value = Decimal(0)  # Total current value of investments
-        breakdown = []
+        portfolio_history = {}
+        last_known_prices = {}  # Dictionary to store the last known prices
 
-        # Cache for current prices to avoid redundant API calls
-        current_prices = {}
+        # Iterate over each day from start_date to today
+        for single_date in (start_date + timedelta(n) for n in range((today - start_date).days + 1)):
+            portfolio_value = Decimal(0)  # Initialize as Decimal
 
-        for investment in investments:
-            ticker = investment.stock.symbol
-
-            # Fetch current price for the stock
-            if ticker not in current_prices:
+            for investment in investments:
+                ticker = investment.stock.symbol  
                 stock_data = yf.Ticker(ticker)
-                hist = stock_data.history(period="1d")
+
+                # Fetch historical data up to the current date in the loop
+                hist = stock_data.history(start=single_date, end=single_date + timedelta(days=1))
+
                 if not hist.empty:
-                    current_price = Decimal(str(hist['Close'].iloc[-1]))
+                    # Get the closing price for the specific date and update the last known price
+                    closing_price = Decimal(str(hist['Close'].iloc[0]))  
+                    last_known_prices[ticker] = closing_price  # Store latest price
                 else:
-                    current_price = Decimal('0')
-                current_prices[ticker] = current_price
+                    # If no price is found, use the last known price (if available)
+                    closing_price = last_known_prices.get(ticker, Decimal(0))  
 
-            # Calculate current value of the investment
-            shares_owned = investment.amount_invested / investment.price_at_purchase
-            current_value = shares_owned * current_prices[ticker]
+                # Calculate portfolio value
+                shares_owned = investment.amount_invested / investment.price_at_purchase
+                portfolio_value += shares_owned * closing_price
 
-            # Update totals
-            total_invested += investment.amount_invested
-            total_current_value += current_value
+            # Store the portfolio value for the date
+            portfolio_history[single_date.strftime("%Y-%m-%d")] = float(portfolio_value)
 
-            # Calculate proportion of the total portfolio
-            proportion = (current_value / total_current_value) * 100 if total_current_value > 0 else 0
-
-            breakdown.append({
-                'stock_symbol': investment.stock.symbol,
-                'stock_name': investment.stock.name,
-                'initial_investment': float(investment.amount_invested),
-                'current_value': float(current_value),
-                'proportion': round(proportion, 2)  # Percentage of total portfolio
-            })
-
-        # Calculate total gains (current value - initial investment)
-        total_gains = total_current_value - total_invested
-
-        return Response({
-            'total_invested': float(total_invested),
-            'total_current_value': float(total_current_value),
-            'total_gains': float(total_gains),
-            'investment_breakdown': breakdown
-        }, status=status.HTTP_200_OK)
-    
+        return Response({"portfolio_value_over_time": portfolio_history}, status=status.HTTP_200_OK)
     @action(detail=False, methods=['get'])
     def get_portfolio_breakdown(self, request):
         user_id = request.query_params.get('user_id')
