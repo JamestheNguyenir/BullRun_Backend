@@ -22,9 +22,9 @@ class UserProfile(models.Model):
         Technology = 'Technology', 'Technology'
         Materials = 'Materials', 'Materials'
         Etf = 'Etf', 'Etf'
-        HealthCare = 'Health Care', 'Health Care'
+        HealthCare = 'HealthCare', 'HealthCare'
         Energy = 'Energy', 'Energy'
-        Financials = 'Financials', 'Financials'
+        Automotive = 'Automotive', 'Automotive'
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     total_investments = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
