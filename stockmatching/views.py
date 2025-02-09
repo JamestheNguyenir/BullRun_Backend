@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from authentication.models import User
-from .models import Stock, StockMatch, UserProfile, StockPrice
-from .serializers import UserProfileSerializer, StockPriceSerializer, StockSerializer, StockMatchSerializer
+from .models import Stock, StockMatch, UserProfile
+from .serializers import UserProfileSerializer, StockSerializer, StockMatchSerializer
 
 class UserProfileView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -32,9 +32,5 @@ class StockMatchView(viewsets.ModelViewSet):
         user_id = request.query_params.get('user_id')
         
         ##TODO 
-class StockPriceView(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    queryset = StockPrice.objects.all()
-    serializer_class = StockPriceSerializer
-    http_methods = ['get','post','patch','delete']
+
 

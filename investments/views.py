@@ -10,12 +10,15 @@ from rest_framework.response import Response
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 
+
 from authentication.models import User
 from .models import Investment
-from stockmatching.models import UserProfile, StockPrice
+from stockmatching.models import UserProfile
 from .serializers import InvestmentSerializer
-from datetime import timedelta
+from datetime import datetime,timedelta
+import yfinance as yf
 
+from decimal import Decimal  # Import Decimal for conversion
 
 class InvestmentView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -71,28 +74,42 @@ class InvestmentView(viewsets.ModelViewSet):
 
         # Determine date range
         today = now().date()
-        default_start_date = today - timedelta(days=365)  # 1 year ago
-        start_date = default_start_date if not start_date_str else min(today, max(default_start_date, start_date_str))
+        default_start_date = today - timedelta(days=30)  
+        start_date = default_start_date if not start_date_str else min(
+            today, max(default_start_date, datetime.strptime(start_date_str, "%Y-%m-%d").date())
+        )
 
         portfolio_history = {}
+        last_known_prices = {}  # Dictionary to store the last known prices
 
         # Iterate over each day from start_date to today
         for single_date in (start_date + timedelta(n) for n in range((today - start_date).days + 1)):
-            portfolio_value = 0
+            portfolio_value = Decimal(0)  # Initialize as Decimal
 
             for investment in investments:
-                # Get stock price for the date (or last known price if unavailable)
-                stock_price = StockPrice.objects.filter(stock=investment.stock, date__lte=single_date).order_by('-date').first()
+                ticker = investment.stock.symbol  
+                stock_data = yf.Ticker(ticker)
 
-                if stock_price:
-                    shares_owned = investment.amount_invested / investment.price_at_purchase
-                    portfolio_value += shares_owned * stock_price.price
+                # Fetch historical data up to the current date in the loop
+                hist = stock_data.history(start=single_date, end=single_date + timedelta(days=1))
 
-            # If no investments exist yet, keep value at 0
-            portfolio_history[single_date.strftime("%Y-%m-%d")] = portfolio_value
+                if not hist.empty:
+                    # Get the closing price for the specific date and update the last known price
+                    closing_price = Decimal(str(hist['Close'].iloc[0]))  
+                    last_known_prices[ticker] = closing_price  # Store latest price
+                else:
+                    # If no price is found, use the last known price (if available)
+                    closing_price = last_known_prices.get(ticker, Decimal(0))  
+
+                # Calculate portfolio value
+                shares_owned = investment.amount_invested / investment.price_at_purchase
+                portfolio_value += shares_owned * closing_price
+
+            # Store the portfolio value for the date
+            portfolio_history[single_date.strftime("%Y-%m-%d")] = float(portfolio_value)
 
         return Response({"portfolio_value_over_time": portfolio_history}, status=status.HTTP_200_OK)
-    
+
     @action(detail=False, methods=['get'])
     def get_portfolio_breakdown(self, request):
         user_id = request.query_params.get('user_id')

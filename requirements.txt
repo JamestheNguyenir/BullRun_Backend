@@ -2,6 +2,7 @@ absl-py==2.1.0
 altgraph==0.17.4
 asgiref==3.8.1
 astunparse==1.6.3
+beautifulsoup4==4.13.3
 build==1.2.2.post1
 certifi==2024.12.14
 charset-normalizer==3.4.1
@@ -14,10 +15,12 @@ docutils==0.21.2
 drf-yasg==1.21.8
 environ==1.0
 flatbuffers==24.12.23
+frozendict==2.4.6
 gast==0.6.0
 google-pasta==0.2.0
 grpcio==1.68.1
 h5py==3.12.1
+html5lib==1.1
 idna==3.10
 inflection==0.5.1
 jaraco.classes==3.4.0
@@ -26,6 +29,7 @@ jaraco.functools==4.1.0
 keras==3.7.0
 keyring==25.6.0
 libclang==18.1.1
+lxml==5.3.0
 macholib==1.16.3
 Markdown==3.7
 markdown-it-py==3.0.0
@@ -33,14 +37,18 @@ MarkupSafe==3.0.2
 mdurl==0.1.2
 ml-dtypes==0.4.1
 more-itertools==10.5.0
+multitasking==0.0.11
 namex==0.0.8
 nh3==0.2.20
 numpy==2.0.2
 opt_einsum==3.4.0
 optree==0.13.1
 packaging==24.2
+pandas==2.2.3
+peewee==3.17.9
 pillow==11.0.0
 pkginfo==1.12.0
+platformdirs==4.3.6
 protobuf==5.29.2
 psycopg2-binary==2.9.10
 Pygments==2.18.0
@@ -48,6 +56,7 @@ pyinstaller==6.11.1
 pyinstaller-hooks-contrib==2024.11
 PyJWT==2.10.1
 pyproject_hooks==1.2.0
+python-dateutil==2.9.0.post0
 pytz==2024.2
 PyYAML==6.0.2
 readme_renderer==44.0
@@ -57,6 +66,7 @@ rfc3986==2.0.0
 rich==13.9.4
 setuptools==75.6.0
 six==1.17.0
+soupsieve==2.6
 sqlparse==0.5.3
 tensorboard==2.18.0
 tensorboard-data-server==0.7.2
@@ -68,6 +78,8 @@ typing_extensions==4.12.2
 tzdata==2024.2
 uritemplate==4.1.1
 urllib3==2.3.0
+webencodings==0.5.1
 Werkzeug==3.1.3
 wheel==0.45.1
 wrapt==1.17.0
+yfinance==0.2.52
