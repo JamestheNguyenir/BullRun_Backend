@@ -17,7 +17,6 @@ from .serializers import InvestmentSerializer
 from datetime import timedelta
 
 
-
 class InvestmentView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     queryset = Investment.objects.all()

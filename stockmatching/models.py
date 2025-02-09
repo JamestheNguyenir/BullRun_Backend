@@ -25,7 +25,8 @@ class Stock(models.Model):
     risk_level = models.CharField(max_length=10, choices=Levels.choices, default=Levels.Low)
     liquidity = models.CharField(max_length=10, choices=Levels.choices, default=Levels.Medium)
     description = models.TextField()
-    
+
+
 class StockMatch(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     stock = models.ForeignKey(Stock, on_delete=models.CASCADE)
