@@ -73,30 +73,6 @@ class InvestmentView(viewsets.ModelViewSet):
         if not investments.exists():
             return Response({"error": "User does not have any investments"}, status=status.HTTP_404_NOT_FOUND)
 
-        # Aggregate investments by stock symbol
-        aggregated_investments = {}
-        for investment in investments:
-            ticker = investment.stock.symbol
-
-            if ticker not in aggregated_investments:
-                aggregated_investments[ticker] = {
-                    'stock_name': investment.stock.name,
-                    'total_invested': Decimal(0),
-                    'total_shares': Decimal(0),
-                    'weighted_avg_price': Decimal(0),
-                }
-
-            # Update total invested and total shares
-            aggregated_investments[ticker]['total_invested'] += investment.amount_invested
-            aggregated_investments[ticker]['total_shares'] += (
-                investment.amount_invested / investment.price_at_purchase
-            )
-
-            # Calculate weighted average purchase price
-            aggregated_investments[ticker]['weighted_avg_price'] = (
-                aggregated_investments[ticker]['total_invested'] / aggregated_investments[ticker]['total_shares']
-            )
-
         # Initialize totals
         total_invested = Decimal(0)  # Total amount invested
         total_current_value = Decimal(0)  # Total current value of investments
@@ -105,7 +81,9 @@ class InvestmentView(viewsets.ModelViewSet):
         # Cache for current prices to avoid redundant API calls
         current_prices = {}
 
-        for ticker, data in aggregated_investments.items():
+        for investment in investments:
+            ticker = investment.stock.symbol
+
             # Fetch current price for the stock
             if ticker not in current_prices:
                 stock_data = yf.Ticker(ticker)
@@ -117,22 +95,21 @@ class InvestmentView(viewsets.ModelViewSet):
                 current_prices[ticker] = current_price
 
             # Calculate current value of the investment
-            current_value = data['total_shares'] * current_prices[ticker]
+            shares_owned = investment.amount_invested / investment.price_at_purchase
+            current_value = shares_owned * current_prices[ticker]
 
             # Update totals
-            total_invested += data['total_invested']
+            total_invested += investment.amount_invested
             total_current_value += current_value
 
             # Calculate proportion of the total portfolio
             proportion = (current_value / total_current_value) * 100 if total_current_value > 0 else 0
 
             breakdown.append({
-                'stock_symbol': ticker,
-                'stock_name': data['stock_name'],
-                'initial_investment': float(data['total_invested']),
+                'stock_symbol': investment.stock.symbol,
+                'stock_name': investment.stock.name,
+                'initial_investment': float(investment.amount_invested),
                 'current_value': float(current_value),
-                'shares_owned': float(data['total_shares']),
-                'weighted_avg_price': float(data['weighted_avg_price']),
                 'proportion': round(proportion, 2)  # Percentage of total portfolio
             })
 
@@ -146,7 +123,83 @@ class InvestmentView(viewsets.ModelViewSet):
             'investment_breakdown': breakdown
         }, status=status.HTTP_200_OK)
     
-    
+    @action(detail=False, methods=['get'])
+    def get_portfolio_breakdown(self, request):
+        user_id = request.query_params.get('user_id')
+
+        if not user_id:
+            return Response({"error": "User ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_profile = get_object_or_404(UserProfile, user_id=user_id)
+        investments = Investment.objects.filter(profile=user_profile)
+
+        if not investments.exists():
+            return Response({"error": "User does not have any investments"}, status=status.HTTP_404_NOT_FOUND)
+
+        # Dictionary to store aggregated data for each stock
+        stock_breakdown = {}
+
+        # Cache for current prices to avoid redundant API calls
+        current_prices = {}
+
+        for investment in investments:
+            ticker = investment.stock.symbol
+
+            # Fetch current price for the stock
+            if ticker not in current_prices:
+                stock_data = yf.Ticker(ticker)
+                hist = stock_data.history(period="1d")
+                if not hist.empty:
+                    current_price = Decimal(str(hist['Close'].iloc[-1]))
+                else:
+                    current_price = Decimal('0')
+                current_prices[ticker] = current_price
+
+            # Calculate current value of the investment
+            shares_owned = investment.amount_invested / investment.price_at_purchase
+            current_value = shares_owned * current_prices[ticker]
+
+            # Aggregate data for the stock
+            if ticker not in stock_breakdown:
+                stock_breakdown[ticker] = {
+                    'stock_symbol': ticker,
+                    'stock_name': investment.stock.name,
+                    'total_invested': Decimal(0),
+                    'total_current_value': Decimal(0),
+                    'shares_owned': Decimal(0)
+                }
+
+            stock_breakdown[ticker]['total_invested'] += investment.amount_invested
+            stock_breakdown[ticker]['total_current_value'] += current_value
+            stock_breakdown[ticker]['shares_owned'] += shares_owned
+
+        # Calculate total portfolio value
+        total_invested = sum(item['total_invested'] for item in stock_breakdown.values())
+        total_current_value = sum(item['total_current_value'] for item in stock_breakdown.values())
+
+        # Prepare the breakdown for response
+        breakdown = []
+        for stock_data in stock_breakdown.values():
+            proportion = (stock_data['total_current_value'] / total_current_value) * 100 if total_current_value > 0 else 0
+            breakdown.append({
+                'stock_symbol': stock_data['stock_symbol'],
+                'stock_name': stock_data['stock_name'],
+                'total_invested': float(stock_data['total_invested']),
+                'total_current_value': float(stock_data['total_current_value']),
+                'shares_owned': float(stock_data['shares_owned']),
+                'proportion': round(proportion, 2)  # Percentage of total portfolio
+            })
+
+        # Calculate total gains (current value - initial investment)
+        total_gains = total_current_value - total_invested
+
+        return Response({
+            'total_invested': float(total_invested),
+            'total_current_value': float(total_current_value),
+            'total_gains': float(total_gains),
+            'investment_breakdown': breakdown
+        }, status=status.HTTP_200_OK)
+
     @action(detail=False, methods=['get'])
     def get_leaderboard(self, request):
 
