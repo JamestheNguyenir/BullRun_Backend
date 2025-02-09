@@ -8,20 +8,21 @@ from rest_framework.decorators import action
 from authentication.models import User
 from .models import Stock, StockMatch, UserProfile, StockPrice
 from .serializers import UserProfileSerializer, StockPriceSerializer, StockSerializer, StockMatchSerializer
-# Create your views here.
-permission_classes = [IsAuthenticated]
 
 class UserProfileView(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = UserProfile.objects.all()
     serializer_class = UserProfileSerializer
     http_methods = ['get','post','patch','delete']
 
 class StockView(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Stock.objects.all()
     serializer_class = StockSerializer
     http_methods = ['get','post','patch','delete']
 
 class StockMatchView(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = StockMatch.objects.all()
     serializer_class = StockMatchSerializer
     
@@ -32,6 +33,7 @@ class StockMatchView(viewsets.ModelViewSet):
         
         ##TODO 
 class StockPriceView(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = StockPrice.objects.all()
     serializer_class = StockPriceSerializer
     http_methods = ['get','post','patch','delete']

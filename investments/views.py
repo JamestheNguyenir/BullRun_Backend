@@ -19,6 +19,7 @@ from datetime import timedelta
 
 
 class InvestmentView(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Investment.objects.all()
     serializer_class = InvestmentSerializer
     http_methods = ['get','post','patch','delete']
