@@ -117,8 +117,8 @@ class InvestmentView(viewsets.ModelViewSet):
         user_profile = get_object_or_404(UserProfile, user_id=user_id)
         investments = Investment.objects.filter(profile=user_profile)
 
-        # Fetch user's liquidity (cash)
-        liquidity = user_profile.liquidity if hasattr(user_profile, 'liquidity') else 0
+        # Fetch user's liquidity (cash) from the UserProfile model
+        liquidity = user_profile.total_liquidity  # Use total_liquidity here instead of manually checking for 'liquidity'
 
         # If no investments, still show liquidity (cash) as part of portfolio
         if not investments.exists() and liquidity == 0:
@@ -210,6 +210,7 @@ class InvestmentView(viewsets.ModelViewSet):
             'total_gains': float(total_gains),
             'investment_breakdown': breakdown
         }, status=status.HTTP_200_OK)
+
 
     @action(detail=False, methods=['get'])
     def get_leaderboard(self, request):
