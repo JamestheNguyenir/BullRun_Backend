@@ -2,13 +2,12 @@
 from django.urls import path, include, re_path
 from rest_framework.routers import DefaultRouter
 
-from .views import UserProfileView, StockMatchView, StockView
+from .views import UserProfileView, StockView
 
 
 
 router = DefaultRouter()
 router.register('userprofile', UserProfileView)
-router.register('matches', StockMatchView)
 router.register('stock',StockView)
 
 urlpatterns = [

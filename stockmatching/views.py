@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from authentication.models import User
-from .models import Stock, StockMatch, UserProfile
-from .serializers import UserProfileSerializer, StockSerializer, StockMatchSerializer
+from .models import Stock, UserProfile
+from .serializers import UserProfileSerializer, StockSerializer
 
 class UserProfileView(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
@@ -20,17 +20,5 @@ class StockView(viewsets.ModelViewSet):
     queryset = Stock.objects.all()
     serializer_class = StockSerializer
     http_methods = ['get','post','patch','delete']
-
-class StockMatchView(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    queryset = StockMatch.objects.all()
-    serializer_class = StockMatchSerializer
-    
-    @action(detail=False, methods=['get'])
-    def get_matches_for_user(self,request):
-        #check the current request user's ID
-        user_id = request.query_params.get('user_id')
-        
-        ##TODO 
 
 
