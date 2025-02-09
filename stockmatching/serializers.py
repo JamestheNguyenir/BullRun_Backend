@@ -1,4 +1,4 @@
-from .models import UserProfile, Stock, StockMatch
+from .models import UserProfile, Stock
 from rest_framework import serializers
 
 
@@ -12,7 +12,3 @@ class StockSerializer(serializers.ModelSerializer):
         model = Stock
         fields = '__all__'
 
-class StockMatchSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StockMatch
-        fields = '__all__'
