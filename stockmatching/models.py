@@ -17,11 +17,20 @@ class UserProfile(models.Model):
         Large = '10B', 'Large-cap ($10B+)'
         Mega = '200B', 'Mega-cap ($200B+)'
         NoMin = '0', 'No Minimum (All Stocks)'
+    class MarketSector(models.TextChoices):
+        Finance = 'Finance', 'Finance'
+        Technology = 'Technology', 'Technology'
+        Materials = 'Materials', 'Materials'
+        Etf = 'Etf', 'Etf'
+        HealthCare = 'Health Care', 'Health Care'
+        Energy = 'Energy', 'Energy'
+        Financials = 'Financials', 'Financials'
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     total_investments = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     total_liquidity = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
     risk_factor = models.CharField(max_length=10,choices=Levels.choices)
+    sector = models.CharField(max_length=30, choices=MarketSector.choices)
     min_market_cap = models.CharField(max_length=20, choices=MinMarketCap.choices)
     time_frame = models.CharField(max_length=20, choices=TimeFrame.choices)
     created_at = models.DateTimeField(auto_now_add=True)
